@@ -23,6 +23,7 @@ class DataStore {
         }
     }
     var filteredToDos: [ToDo] = []
+    @ObservationIgnored
     var forPreview: Bool
     init(forPreview: Bool = false) {
         self.forPreview = forPreview
