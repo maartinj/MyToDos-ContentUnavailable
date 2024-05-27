@@ -62,15 +62,19 @@ struct ToDoListView: View {
 //                    ContentUnavailableView("You have no ToDos",
 //                                           image: "No ToDos",
 //                                           description: Text("Start creating your own list of ToDos").font(.largeTitle))
-                    ContentUnavailableView {
-                        Label("You have no ToDos", image: "No ToDos")
-                    } description: {
-                        Text("Start creating your own list of ToDos").font(.largeTitle)
-                    } actions: {
-                        Button("New ToDo") {
-                            newToDoAlert.toggle()
+                    if dataStore.toDos.isEmpty {
+                        ContentUnavailableView {
+                            Label("You have no ToDos", image: "No ToDos")
+                        } description: {
+                            Text("Start creating your own list of ToDos").font(.largeTitle)
+                        } actions: {
+                            Button("New ToDo") {
+                                newToDoAlert.toggle()
+                            }
+                            .buttonStyle(.borderedProminent)
                         }
-                        .buttonStyle(.borderedProminent)
+                    } else {
+                        ContentUnavailableView.search
                     }
                 }
             }
