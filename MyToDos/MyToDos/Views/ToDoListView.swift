@@ -8,6 +8,8 @@
 // Subscribe on YouTube: https://youTube.com/@StewartLynch
 // Buy me a ko-fi:  https://ko-fi.com/StewartLynch
 
+// Link: https://www.youtube.com/watch?v=3yWxtjUm0CE&ab_channel=StewartLynch
+
 
 import SwiftUI
 
@@ -19,41 +21,63 @@ struct ToDoListView: View {
     var body: some View {
         @Bindable var dataStore = dataStore
         NavigationStack {
-            List() {
-                ForEach($dataStore.filteredToDos) { $toDo in
-                    TextField(toDo.name, text: $toDo.name)
-                            .font(.title3)
-                            .foregroundStyle(toDo.completed ? .green : Color(.label))
-                            .focused($focusedField, equals: true)
-                            .overlay {
-                                Rectangle()
-                                    .fill(Color.green)
-                                    .frame(height: 1)
-                                    .opacity(toDo.completed ? 1 : 0)
-                            }
-                            .onSubmit {
-                                dataStore.updateToDo(toDo)
-                            }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            withAnimation {
-                                dataStore.deleteToDo(toDo)
-                            }
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+            Group {
+                if !dataStore.filteredToDos.isEmpty {
+                    List() {
+                        ForEach($dataStore.filteredToDos) { $toDo in
+                            TextField(toDo.name, text: $toDo.name)
+                                .font(.title3)
+                                .foregroundStyle(toDo.completed ? .green : Color(.label))
+                                .focused($focusedField, equals: true)
+                                .overlay {
+                                    Rectangle()
+                                        .fill(Color.green)
+                                        .frame(height: 1)
+                                        .opacity(toDo.completed ? 1 : 0)
+                                }
+                                .onSubmit {
+                                    dataStore.updateToDo(toDo)
+                                }
+                                .swipeActions {
+                                    Button(role: .destructive) {
+                                        withAnimation {
+                                            dataStore.deleteToDo(toDo)
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .swipeActions(edge: .leading) {
+                                    Button {
+                                        toDo.completed.toggle()
+                                        dataStore.updateToDo(toDo)
+                                    } label: {
+                                        Text(toDo.completed ? "Remove Completion" : "Completed")
+                                    }.tint(.teal)
+                                }
                         }
                     }
-                    .swipeActions(edge: .leading) {
-                        Button {
-                            toDo.completed.toggle()
-                            dataStore.updateToDo(toDo)
-                        } label: {
-                            Text(toDo.completed ? "Remove Completion" : "Completed")
-                        }.tint(.teal)
+                    .listStyle(.insetGrouped)
+                } else {
+//                    ContentUnavailableView("You have no ToDos",
+//                                           image: "No ToDos",
+//                                           description: Text("Start creating your own list of ToDos").font(.largeTitle))
+                    if dataStore.toDos.isEmpty {
+                        ContentUnavailableView {
+                            Label("You have no ToDos", image: "No ToDos")
+                        } description: {
+                            Text("Start creating your own list of ToDos").font(.largeTitle)
+                        } actions: {
+                            Button("New ToDo") {
+                                newToDoAlert.toggle()
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    } else {
+                        ContentUnavailableView.search
                     }
                 }
             }
-            .listStyle(.insetGrouped)
             .navigationTitle("My ToDos")
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
@@ -93,7 +117,27 @@ struct ToDoListView: View {
         } message: { appError in
             Text(appError.message)
         }
-        .searchable(text: $dataStore.filterText, prompt:Text("Filter ToDos"))
+//        .searchable(text: $dataStore.filterText, prompt:Text("Filter ToDos"))
+        .showSearchBar(showSearch: !dataStore.toDos.isEmpty, filterText: $dataStore.filterText)
+    }
+}
+
+struct ShowSeacrhBar: ViewModifier {
+    let showSearch: Bool
+    @Binding var filterText: String
+    func body(content: Content) -> some View {
+        if showSearch {
+                content
+                .searchable(text: $filterText, prompt:Text("Filter ToDos"))
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func showSearchBar(showSearch: Bool, filterText: Binding<String>) -> some View {
+        modifier(ShowSeacrhBar(showSearch: showSearch, filterText: filterText))
     }
 }
 
@@ -102,7 +146,7 @@ struct ToDoListView: View {
         .onAppear {
             print(URL.documentsDirectory.path(percentEncoded: false))
         }
-        .environment(DataStore(forPreview: true))
+        .environment(DataStore())
 }
 
 
