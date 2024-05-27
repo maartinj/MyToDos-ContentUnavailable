@@ -21,7 +21,6 @@ struct ToDoListView: View {
     var body: some View {
         @Bindable var dataStore = dataStore
         NavigationStack {
-            // Odtąd dalej 3:58
             Group {
                 if !dataStore.filteredToDos.isEmpty {
                     List() {
@@ -60,7 +59,9 @@ struct ToDoListView: View {
                     }
                     .listStyle(.insetGrouped)
                 } else {
-                    Text("Some other view")
+                    ContentUnavailableView("You have no ToDos",
+                                           image: "No ToDos",
+                                           description: Text("Start creating your own list of ToDos").font(.largeTitle))
                 }
             }
             .navigationTitle("My ToDos")
